@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GearBari | Premium Gadgets & Gear Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- For PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- cursor-follow ambient spotlight (purely decorative) -->
+  <div class="gb-spotlight" aria-hidden="true"></div>
+
+  <!-- ========== TOP BANNER (LED ticker) ========== -->
+  <div class="top-banner">
+    <div class="gb-marquee" aria-hidden="true">
+      <span><span class="dot"></span> Instant delivery across Bangladesh</span>
+      <span><b>100%</b> original, authentic products</span>
+      <span><span class="dot"></span> Live stock tracking on every listing</span>
+      <span><b>Cash on delivery</b> available nationwide</span>
+      <span><span class="dot"></span> Instant delivery across Bangladesh</span>
+      <span><b>100%</b> original, authentic products</span>
+      <span><span class="dot"></span> Live stock tracking on every listing</span>
+      <span><b>Cash on delivery</b> available nationwide</span>
+    </div>
+  </div>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-black sticky-top border-bottom border-secondary py-3">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3" href="#">Gear<span>Bari</span></a>
+      
+      <div class="d-flex flex-grow-1 mx-4">
+        <input type="text" id="search-input" class="form-control bg-dark text-white border-secondary" placeholder="Search phones, accessories, gadgets...">
+      </div>
+
+      <div class="d-flex gap-2 align-items-center">
+        <!-- User display -->
+        <span id="user-display" class="text-warning fw-bold d-none"></span>
+        
+        <!-- Logout button (hidden by default) -->
+        <button class="btn btn-outline-danger btn-sm d-none" id="logout-btn">Logout</button>
+
+        <!-- My Orders link (for customers, hidden by default) - a real page, not a popup -->
+        <a class="btn btn-outline-info btn-sm d-none" id="my-orders-link" href="account.html">
+          <i class="bi bi-box-seam"></i> My Account
+        </a>
+
+        <!-- Admin buttons (hidden by default) -->
+        <button class="btn btn-outline-warning btn-sm d-none" id="admin-dashboard-btn">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </button>
+        <button class="btn btn-outline-warning btn-sm d-none" id="admin-add-btn" data-bs-toggle="modal" data-bs-target="#addProductModal">+ Add Product</button>
+        
+        <!-- Login button -->
+        <button class="btn btn-outline-light btn-sm" id="login-modal-btn" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+        
+        <!-- Cart button -->
+        <button class="btn btn-outline-light position-relative ms-2" id="cart-toggle" data-bs-toggle="modal" data-bs-target="#cartModal">
+          <i class="bi bi-cart3 fs-5"></i>
+          <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== HERO ========== -->
+  <div class="gb-hero">
+    <div class="eyebrow">System Online &middot; Dhaka Warehouse</div>
+    <h1>Gear for your <span class="accent">next upgrade.</span></h1>
+    <p>Phones, accessories, PC gear and gadgets — sourced authentic, tracked in real time, delivered fast anywhere in Bangladesh.</p>
+    <div class="gb-cta-row">
+      <button class="btn btn-warning" onclick="document.getElementById('product-grid').scrollIntoView({behavior:'smooth'})">Browse Catalog</button>
+      <div class="gb-stat"><b>20+</b>Products live</div>
+      <div class="gb-stat"><b>&lt;5s</b>Stock refresh</div>
+    </div>
+  </div>
+
+  <!-- ========== CATEGORY FILTER BAR ========== -->
+  <div class="container my-4">
+    <div class="d-flex justify-content-center flex-wrap gap-2" id="category-pills">
+      <span class="badge bg-secondary px-3 py-2 category-pill active" data-cat="All">All Items</span>
+      <span class="badge bg-secondary px-3 py-2 category-pill" data-cat="Phones">Phones</span>
+      <span class="badge bg-secondary px-3 py-2 category-pill" data-cat="Phone Accessories">Phone Accessories</span>
+      <span class="badge bg-secondary px-3 py-2 category-pill" data-cat="PC Accessories">PC Accessories</span>
+      <span class="badge bg-secondary px-3 py-2 category-pill" data-cat="Gadgets">Gadgets</span>
+    </div>
+  </div>
+
+  <!-- ========== PRODUCTS GRID ========== -->
+  <div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 id="section-title" class="fw-bold">Featured Products</h4>
+    </div>
+    <div class="row g-4" id="product-grid">
+      <!-- Dynamically loaded -->
+    </div>
+  </div>
+
+  <!-- ========== ADMIN DASHBOARD (hidden by default) ========== -->
+  <div id="admin-dashboard" style="display: none;">
+    <div class="container my-4">
+      <h3><i class="bi bi-speedometer2"></i> Admin Dashboard</h3>
+      <!-- Seed Button -->
+      <button id="seed-btn-admin" class="btn btn-outline-warning btn-sm mb-3">⚡ Seed 20 Products</button>
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminOrders">Orders</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminUsers">Users</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminStock">Stock</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminSales">Sales</button></li>
+      </ul>
+      <div class="tab-content mt-3" id="adminTabsContent">
+        <!-- Orders Tab -->
+        <div class="tab-pane fade show active" id="adminOrders">
+          <div class="table-responsive">
+            <table class="table table-dark table-striped" id="admin-orders-table">
+              <thead>
+                <tr><th>Invoice</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody id="admin-orders-list"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Users Tab -->
+        <div class="tab-pane fade" id="adminUsers">
+          <div class="table-responsive">
+            <table class="table table-dark table-striped" id="admin-users-table">
+              <thead><tr><th>Name</th><th>Phone</th><th>Orders</th></tr></thead>
+              <tbody id="admin-users-list"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Stock Tab (with "Add New Product" button) -->
+        <div class="tab-pane fade" id="adminStock">
+          <!-- NEW BUTTON: opens the same Add Product modal -->
+          <button class="btn btn-warning btn-sm mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            <i class="bi bi-plus-circle"></i> Add New Product
+          </button>
+          <div class="table-responsive">
+            <table class="table table-dark table-striped">
+              <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Update</th></tr></thead>
+              <tbody id="admin-product-list"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Sales Tab -->
+        <div class="tab-pane fade" id="adminSales">
+          <div id="sales-summary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MODALS ========== -->
+
+  <!-- 1. LOGIN MODAL -->
+  <div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white gb-auth-card">
+        <button type="button" class="btn-close btn-close-white gb-auth-close" data-bs-dismiss="modal"></button>
+        <div class="gb-auth-header">
+          <div class="gb-auth-badge"><i class="bi bi-person-check-fill"></i></div>
+          <h4 class="gb-auth-title">Hey there! Welcome to GearBari</h4>
+          <p class="gb-auth-subtitle">Sign in or say hello for the first time — either way, it takes seconds.</p>
+        </div>
+        <div class="modal-body pt-0">
+          <ul class="nav nav-pills nav-justified gb-auth-tabs" id="loginTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="returning-tab" data-bs-toggle="tab" data-bs-target="#returning" type="button" role="tab">
+                <i class="bi bi-arrow-repeat"></i> I've been here before
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="newbie-tab" data-bs-toggle="tab" data-bs-target="#newbie" type="button" role="tab">
+                <i class="bi bi-stars"></i> I'm new here
+              </button>
+            </li>
+          </ul>
+          <div class="tab-content mt-4" id="loginTabsContent">
+            <!-- Returning (Login) -->
+            <div class="tab-pane fade show active" id="returning" role="tabpanel">
+              <p class="gb-auth-hint">Good to see you again! Pop in your name and phone number to pick up right where you left off.</p>
+              <form id="login-form">
+                <div class="mb-3 gb-field">
+                  <label class="gb-field-label" for="login-username"><i class="bi bi-person-fill"></i> Your Name</label>
+                  <input type="text" id="login-username" class="form-control gb-field-input" placeholder="e.g. Karim Ahmed" required onkeypress="return /[a-zA-Z ]/.test(event.key)" pattern="[a-zA-Z ]+">
+                </div>
+                <div class="mb-3 gb-field">
+                  <label class="gb-field-label" for="login-password"><i class="bi bi-telephone-fill"></i> Phone Number</label>
+                  <input type="tel" id="login-password" class="form-control gb-field-input" placeholder="e.g. 01712345678" required onkeypress="return /[0-9+]/.test(event.key)" pattern="[0-9+]+">
+                </div>
+                <button type="submit" class="btn btn-warning w-100 fw-bold gb-auth-submit">Welcome back — Login <i class="bi bi-arrow-right"></i></button>
+              </form>
+            </div>
+            <!-- Newbie (Register) -->
+            <div class="tab-pane fade" id="newbie" role="tabpanel">
+              <p class="gb-auth-hint">Nice to meet you! Just your name and phone number — we'll set up your account instantly, no password to remember.</p>
+              <form id="register-form">
+                <div class="mb-3 gb-field">
+                  <label class="gb-field-label" for="reg-name"><i class="bi bi-person-fill"></i> Full Name</label>
+                  <input type="text" id="reg-name" class="form-control gb-field-input" placeholder="e.g. Karim Ahmed" required onkeypress="return /[a-zA-Z ]/.test(event.key)" pattern="[a-zA-Z ]+">
+                </div>
+                <div class="mb-3 gb-field">
+                  <label class="gb-field-label" for="reg-phone"><i class="bi bi-telephone-fill"></i> Phone Number</label>
+                  <input type="tel" id="reg-phone" class="form-control gb-field-input" placeholder="e.g. 01712345678" required onkeypress="return /[0-9+]/.test(event.key)" pattern="[0-9+]+">
+                </div>
+                <button type="submit" class="btn btn-success w-100 fw-bold gb-auth-submit">Create my account <i class="bi bi-arrow-right"></i></button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CART MODAL -->
+  <div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"><i class="bi bi-cart3"></i> Your Cart</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="cart-items-list">
+            <p class="text-muted text-center">Your cart is empty.</p>
+          </div>
+          <hr class="border-secondary">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5>Total: <span id="cart-total-amount">0</span> ৳</h5>
+            <button id="checkout-btn" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#orderModal" data-bs-dismiss="modal">Proceed to Checkout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ORDER MODAL -->
+  <div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title">📦 Place Order</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="order-form">
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="order-name" class="form-control bg-dark text-white border-secondary" required onkeypress="return /[a-zA-Z ]/.test(event.key)" pattern="[a-zA-Z ]+">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" id="order-phone" class="form-control bg-dark text-white border-secondary" required onkeypress="return /[0-9+]/.test(event.key)" pattern="[0-9+]+">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Delivery Address</label>
+              <textarea id="order-address" class="form-control bg-dark text-white border-secondary" rows="2" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Delivery Option</label>
+              <select id="order-delivery" class="form-select bg-dark text-white border-secondary" required>
+                <option value="">Select...</option>
+                <option value="Inside Dhaka">Inside Dhaka (Delivery Charge 80 TK)</option>
+                <option value="Outside Dhaka">Outside Dhaka (Delivery Charge 100 TK)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between">
+                <span>Subtotal: <span id="order-subtotal">0</span> ৳</span>
+                <span>Delivery: <span id="order-delivery-charge">0</span> ৳</span>
+                <span class="fw-bold">Total: <span id="order-total">0</span> ৳</span>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 fw-bold">Confirm Order</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. ADMIN ADD PRODUCT MODAL -->
+  <div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title">Admin - Add New Product</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="add-product-form">
+            <div class="mb-3">
+              <label class="form-label">Product Name</label>
+              <input type="text" id="prod-name" class="form-control bg-dark text-white border-secondary" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Price (৳)</label>
+              <input type="number" id="prod-price" class="form-control bg-dark text-white border-secondary" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Category</label>
+              <select id="prod-category" class="form-select bg-dark text-white border-secondary" required>
+                <option value="Phones">Phones</option>
+                <option value="Phone Accessories">Phone Accessories</option>
+                <option value="PC Accessories">PC Accessories</option>
+                <option value="Gadgets">Gadgets</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Image URL</label>
+              <input type="text" id="prod-image" class="form-control bg-dark text-white border-secondary" placeholder="https://..." required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Badge (Optional)</label>
+              <input type="text" id="prod-badge" class="form-control bg-dark text-white border-secondary" placeholder="e.g. New / Hot / 10% OFF">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Initial Stock</label>
+              <input type="number" id="prod-stock" class="form-control bg-dark text-white border-secondary" value="10" required>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 fw-bold">Save to Database</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. TOAST for order success -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <div id="order-toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          ✅ Your order has been placed successfully!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="gb-footer">
+    GearBari <span class="dot">&bull;</span> Authentic tech, delivered <span class="dot">&bull;</span> &copy; <span id="gb-year"></span>
+  </footer>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('gb-year').textContent = new Date().getFullYear();
+    // Ambient cursor-follow spotlight (purely decorative, no functional impact)
+    document.addEventListener('mousemove', function (e) {
+      document.documentElement.style.setProperty('--mx', e.clientX + 'px');
+      document.documentElement.style.setProperty('--my', e.clientY + 'px');
+    });
+  </script>
+</body>
+</html>
