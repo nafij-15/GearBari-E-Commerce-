@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # GearBari — Run Locally
 
 This is your original GearBari project (Express + MongoDB + vanilla JS/Bootstrap
@@ -41,3 +42,7 @@ empty database, so the storefront won't be empty on first run.
   Bootstrap and your existing `app.js` logic depend on — so all functionality
   (cart, checkout, login/register, invoices, admin dashboard, live stock
   polling, etc.) works exactly as before.
+=======
+# GearBari-E-Commerce-
+An E-Commerece with Real-time MongoDB database support I've created as a project while I was learning nodeJS,HTML5,JavaScript
+>>>>>>> 4f7cd74a15c3a200772f215fe22b55e91e27019e
